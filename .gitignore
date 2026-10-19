@@ -1,0 +1,6 @@
+node_modules/
+dist/
+dist-phone/
+android/app/build/
+ios/App/Pods/
+.DS_Store

@@ -1,0 +1,18 @@
+{
+  "appId": "com.poppkou.lethe",
+  "appName": "Протокол: Лета",
+  "webDir": "dist",
+  "backgroundColor": "#000000",
+  "android": {
+    "backgroundColor": "#000000"
+  },
+  "ios": {
+    "backgroundColor": "#000000",
+    "contentInset": "never"
+  },
+  "plugins": {
+    "LocalNotifications": {
+      "iconColor": "#3f6b5c"
+    }
+  }
+}
