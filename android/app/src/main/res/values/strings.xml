@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Протокол: Лета</string>
+    <string name="title_activity_main">Протокол: Лета</string>
+    <string name="package_name">com.poppkou.lethe</string>
+    <string name="custom_url_scheme">com.poppkou.lethe</string>
+</resources>
