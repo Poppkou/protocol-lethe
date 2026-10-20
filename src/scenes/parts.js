@@ -32,19 +32,22 @@ export function clickOne(buttons, signal) {
   });
 }
 
+// Шкала памяти: крупная цифра заполнения и сегментная полоса, как в системных «очистителях».
+// Имя ringChart оставлено ради совместимости со сценами.
 export function ringChart(value = 0) {
-  const R = 42;
-  const C = 2 * Math.PI * R;
-  const el = h('div', { class: 'ring' });
-  el.innerHTML = `<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="${R}" class="ring-bg"/><circle cx="50" cy="50" r="${R}" class="ring-fg" stroke-dasharray="${C}" stroke-dashoffset="${C}"/></svg>`;
-  const fg = el.querySelector('.ring-fg');
-  const label = h('div', { class: 'ring-pct' });
-  el.append(label);
+  const SEG = 32;
+  const num = h('b', { class: 'gauge-num' });
+  const bar = h('div', { class: 'gauge-bar', 'aria-hidden': 'true' });
+  for (let i = 0; i < SEG; i++) bar.append(h('i'));
+  const el = h('div', { class: 'gauge', role: 'img' }, h('div', { class: 'gauge-read' }, num, h('span', { class: 'gauge-unit' }, '%')), bar);
   const api = {
     el,
     set(v) {
-      fg.style.strokeDashoffset = String(C * (1 - Math.max(0, Math.min(1, v))));
-      label.textContent = `${Math.round(v * 100)}%`;
+      const p = Math.max(0, Math.min(1, v));
+      num.textContent = String(Math.round(p * 100));
+      const on = Math.round(p * SEG);
+      [...bar.children].forEach((s, i) => s.classList.toggle('on', i < on));
+      el.setAttribute('aria-label', `Заполнено ${Math.round(p * 100)}%`);
     },
     spin(on) {
       el.classList.toggle('spin', on);

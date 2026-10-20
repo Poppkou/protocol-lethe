@@ -17,7 +17,11 @@ export class UI {
     this.status = h('div', { class: 'status', hidden: true }, this.stTime, this.stSession, h('span', { class: 'st-right' }, this.stTemp, this.stBat));
     this.stage = h('main', { class: 'stage' });
     this.sysText = h('p', { class: 'sys-text', 'aria-live': 'polite' });
-    this.sys = h('div', { class: 'sys', hidden: true }, h('span', { class: 'sys-logo', html: LOGO }), this.sysText);
+    // Строка журнала: метка приложения и время реплики, как в системном логе.
+    this.sysStamp = h('span', { class: 'sys-stamp' });
+    this.sys = h('div', { class: 'sys', hidden: true },
+      h('div', { class: 'sys-head' }, h('span', { class: 'sys-logo', html: LOGO }), h('span', { class: 'sys-app' }, 'ЛЕТА'), this.sysStamp),
+      this.sysText);
     this.fxCanvas = h('canvas', { class: 'fx', 'aria-hidden': 'true' });
     this.over = h('div', { class: 'over' });
     root.append(this.status, this.stage, this.sys, this.fxCanvas, this.over);
@@ -82,6 +86,8 @@ export class UI {
   async sysSay(text, opts = {}) {
     this.sys.hidden = false;
     this.sys.dataset.tone = opts.tone || '';
+    const d = new Date();
+    this.sysStamp.textContent = `${clockRu()}:${String(d.getSeconds()).padStart(2, '0')}`;
     await this.type(this.sysText, text, opts);
   }
 
