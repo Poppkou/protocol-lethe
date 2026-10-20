@@ -55,7 +55,9 @@ export const onboarding = {
     const splash = h('div', { class: 'splash' },
       h('div', { class: 'splash-logo', html: LOGO }),
       h('div', { class: 'brand' }, C.meta.app),
-      h('div', { class: 'tagline' }, T('onb.tagline')));
+      h('div', { class: 'tagline' }, T('onb.tagline')),
+      // расшифровка аббревиатуры и номер сборки — тот же 0412, что у фото из бассейна
+      h('div', { class: 'splash-foot mono' }, h('span', {}, C.meta.appFull), h('span', {}, 'сборка 4.2 · 0412')));
     ui.stage.append(splash);
     audio.uiTick();
     await ctx.wait(2800);

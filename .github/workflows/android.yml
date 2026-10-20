@@ -1,0 +1,72 @@
+# Собирает APK для Android без Android Studio: веб-часть (Vite) → Capacitor → Gradle.
+# Готовый файл появляется в разделе Releases репозитория (его удобно скачать прямо с телефона)
+# и в артефактах запуска. APK подписан отладочным ключом — для установки «из неизвестных источников»,
+# не для Google Play.
+name: Android APK
+
+on:
+  push:
+    branches: [main, 'claude/**']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  apk:
+    runs-on: ubuntu-24.04  # здесь Android SDK уже предустановлен
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Android SDK
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0" > /dev/null
+
+      - run: npm ci
+      - name: Веб-часть и синхронизация с Android
+        run: |
+          npx vite build
+          npx cap sync android
+          node scripts/patch-native.mjs android
+
+      - name: Gradle assembleDebug
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Переименовать APK
+        id: apk
+        run: |
+          name="protocol-lethe-${GITHUB_RUN_NUMBER}.apk"
+          cp android/app/build/outputs/apk/debug/app-debug.apk "$name"
+          echo "file=$name" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: protocol-lethe-apk
+          path: ${{ steps.apk.outputs.file }}
+
+      - name: Выложить в Releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="apk-${GITHUB_RUN_NUMBER}"
+          gh release create "$tag" "${{ steps.apk.outputs.file }}" \
+            --target "$GITHUB_SHA" \
+            --prerelease \
+            --title "Протокол: Лета — APK №${GITHUB_RUN_NUMBER}" \
+            --notes "Сборка из ветки ${GITHUB_REF_NAME}, коммит ${GITHUB_SHA::7}. Отладочная подпись: установите файл на телефон, разрешив установку из этого источника."
